@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -28,6 +28,10 @@
       <div class="header-content">
         <img src="img/loreal-logo.png" alt="L'Oréal Logo" class="logo mb-3" />
         <h1 class="site-title h2 fw-medium mb-2">Smart Routine &amp; Product Advisor</h1>
+        <button id="rtlToggle" class="btn btn-sm btn-outline-secondary mt-2">
+          <i class="fas fa-language me-2"></i>
+          <span id="rtlToggleText">عربي</span>
+        </button>
       </div>
     </header>
 
@@ -91,7 +95,12 @@
 
       <!------- Chat Area ------->
       <section class="chatbox border border-2 border-dark rounded p-4 my-4">
-        <h2 class="h4 fw-medium mb-3">Let's Build Your Routine</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h4 fw-medium mb-0">Let's Build Your Routine</h2>
+          <button id="clearChatBtn" class="btn btn-outline-secondary btn-sm" title="Clear conversation">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
         <div id="chatWindow" class="chat-window bg-light p-3 rounded mb-3"></div>
 
         <form id="chatForm" class="chat-form">
@@ -102,7 +111,7 @@
               name="userInput"
               type="text"
               class="form-control form-control-lg"
-              placeholder="Ask me about products or routines…"
+              placeholder="Type your message here..."
               autocomplete="off"
               required
             />
