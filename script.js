@@ -391,6 +391,7 @@ IMPORTANT GUIDELINES:
 - Provide clear, practical advice that users can easily follow
 - Format responses with bold headers and regular text for organized sections
 - Do not use special characters like asterisks, bullets, or hashtags
+- Use emojis appropriately to create emotional connection and express warmth
 - Keep responses concise but informative
 - When products are selected, incorporate them into your recommendations
 - If no products are selected, suggest suitable L'Oreal product categories
@@ -398,8 +399,8 @@ IMPORTANT GUIDELINES:
 
 RESPONSE FORMAT:
 Use HTML formatting with <h3> for main headers, <h4> for sub-headers, and <p> for paragraphs.
-Example: <h3>Your Personalized Beauty Routine</h3><h4>Morning Steps</h4><p>Start with...</p>
-Keep it clean and easy to read.`;
+Example: <h3>Your Personalized Beauty Routine ✨</h3><h4>Morning Steps 🌅</h4><p>Start with...</p>
+Keep it clean and easy to read with emojis to enhance emotional connection.`;
 
   const messages = [
     {
