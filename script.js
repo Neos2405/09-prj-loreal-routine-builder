@@ -413,21 +413,66 @@ document.addEventListener("click", (e) => {
 
 /* Initialize the app by loading all products */
 async function initializeApp() {
-  /* Load data from localStorage first */
-  loadFromStorage();
-  
-  /* Initialize automatic RTL detection */
-  initializeRTLDetection();
-  
-  const products = await loadProducts();
-  currentFilteredProducts = products;
-  visibleProductsCount = PRODUCTS_PER_PAGE;
-  displayProducts(products);
-  updateSelectedProductsDisplay(); // Initialize with saved selections
+  try {
+    /* Load data from localStorage first */
+    loadFromStorage();
+    
+    /* Initialize RTL detection after a short delay to not interfere with page load */
+    setTimeout(() => {
+      try {
+        initializeRTLDetection();
+      } catch (error) {
+        console.error('RTL detection initialization failed:', error);
+      }
+    }, 1000);
+    
+    const products = await loadProducts();
+    currentFilteredProducts = products;
+    visibleProductsCount = PRODUCTS_PER_PAGE;
+    displayProducts(products);
+    updateSelectedProductsDisplay(); // Initialize with saved selections
+  } catch (error) {
+    console.error('App initialization failed:', error);
+    /* Show error message to user */
+    const productsContainer = document.getElementById("productsContainer");
+    if (productsContainer) {
+      productsContainer.innerHTML = `
+        <div class="col-12">
+          <div class="alert alert-danger text-center" role="alert">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            Unable to load the application. Please refresh the page.
+          </div>
+        </div>
+      `;
+    }
+  }
 }
 
 /* Start the app when the page loads */
-initializeApp();
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    initializeApp();
+  } catch (error) {
+    console.error('Failed to start app:', error);
+  }
+});
+
+/* Fallback initialization if DOMContentLoaded doesn't fire */
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      initializeApp();
+    } catch (error) {
+      console.error('Failed to start app:', error);
+    }
+  });
+} else {
+  try {
+    initializeApp();
+  } catch (error) {
+    console.error('Failed to start app:', error);
+  }
+}
 
 /* Chat form submission handler with OpenAI integration */
 chatForm.addEventListener("submit", async (e) => {
@@ -985,59 +1030,60 @@ document.getElementById("generateRoutine").addEventListener("click", async () =>
   }
 });
 
-/* Automatic RTL Detection for Web Translation */
+/* Simple RTL Detection for Google Translate */
 function detectAndApplyRTL() {
-  const html = document.documentElement;
-  
-  /* Check if the page direction is set to RTL by translation services */
-  const computedDirection = window.getComputedStyle(html).direction;
-  const htmlDir = html.getAttribute('dir');
-  const htmlLang = html.getAttribute('lang');
-  
-  /* Detect if we're in RTL mode through various methods */
-  const isRTL = computedDirection === 'rtl' || 
-                htmlDir === 'rtl' || 
-                htmlLang === 'ar' || 
-                htmlLang === 'he' || 
-                htmlLang === 'fa' || 
-                htmlLang === 'ur';
-  
-  /* Apply RTL styles if detected */
-  if (isRTL) {
-    html.setAttribute('dir', 'rtl');
-    if (!html.classList.contains('rtl-mode')) {
-      html.classList.add('rtl-mode');
+  try {
+    const html = document.documentElement;
+    const body = document.body;
+    
+    /* Check Google Translate's language attribute */
+    const htmlLang = html.getAttribute('lang') || '';
+    const bodyLang = body.getAttribute('lang') || '';
+    const currentLang = bodyLang || htmlLang;
+    
+    /* Simple RTL language detection */
+    const rtlLanguages = ['ar', 'he', 'fa', 'ur'];
+    const isRTL = rtlLanguages.some(lang => currentLang.startsWith(lang));
+    
+    /* Only change direction if it's different from current */
+    const currentDir = html.getAttribute('dir');
+    const newDir = isRTL ? 'rtl' : 'ltr';
+    
+    if (currentDir !== newDir) {
+      html.setAttribute('dir', newDir);
+      console.log(`Language detected: ${currentLang}, Direction: ${newDir}`);
     }
-  } else {
-    html.setAttribute('dir', 'ltr');
-    html.classList.remove('rtl-mode');
+  } catch (error) {
+    console.error('RTL detection error:', error);
   }
 }
 
-/* Monitor for changes that might indicate translation */
+/* Simple initialization for Google Translate compatibility */
 function initializeRTLDetection() {
-  /* Initial detection */
-  detectAndApplyRTL();
-  
-  /* Watch for DOM changes that might indicate translation */
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      /* Check if language or direction attributes changed */
-      if (mutation.type === 'attributes' && 
-          (mutation.attributeName === 'dir' || 
-           mutation.attributeName === 'lang' || 
-           mutation.attributeName === 'style')) {
-        detectAndApplyRTL();
-      }
+  try {
+    /* Initial detection */
+    detectAndApplyRTL();
+    
+    /* Watch for language changes from Google Translate */
+    const observer = new MutationObserver(() => {
+      /* Use a timeout to avoid interfering with translation process */
+      setTimeout(detectAndApplyRTL, 500);
     });
-  });
-  
-  /* Observe changes to the html element */
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['dir', 'lang', 'style', 'class']
-  });
-  
-  /* Also check periodically for translation services that don't trigger mutations */
-  setInterval(detectAndApplyRTL, 1000);
+    
+    /* Watch for changes on both html and body */
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['lang']
+    });
+    
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['lang']
+    });
+    
+    /* Also check periodically but less frequently */
+    setInterval(detectAndApplyRTL, 3000);
+  } catch (error) {
+    console.error('RTL initialization error:', error);
+  }
 }

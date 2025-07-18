@@ -758,6 +758,151 @@ body {
   margin-left: 0.5rem;
 }
 
+/* RTL Support for Selected Products Header and Controls */
+[dir="rtl"] .selected-products-header {
+  text-align: right;
+}
+
+[dir="rtl"] .selected-products-header h2 {
+  text-align: right;
+}
+
+[dir="rtl"] .d-flex.align-items-center {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+}
+
+[dir="rtl"] .selected-products-tags {
+  justify-content: flex-end;
+}
+
+/* RTL Specific overrides for Clear All button container */
+[dir="rtl"] #selectedProductsList .d-flex.align-items-center {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+[dir="rtl"] #selectedProductsList .d-flex.align-items-center > * {
+  order: 2;
+}
+
+[dir="rtl"] #selectedProductsList .d-flex.align-items-center > span {
+  order: 1;
+}
+
+[dir="rtl"] .selected-products-tags.d-flex {
+  justify-content: flex-end;
+  direction: rtl;
+}
+
+/* RTL Product Tags Layout */
+[dir="rtl"] .selected-product-tag {
+  margin: 0.25rem;
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+[dir="rtl"] .selected-product-tag .btn-close {
+  margin-right: 0.5rem;
+  margin-left: 0;
+}
+
+/* RTL Gap override for flex containers */
+[dir="rtl"] .gap-2 {
+  gap: 0 !important;
+}
+
+[dir="rtl"] .gap-2 > * {
+  margin-left: 0.5rem;
+  margin-right: 0;
+}
+
+[dir="rtl"] .gap-2 > *:first-child {
+  margin-left: 0;
+}
+
+/* RTL Flex wrap override */
+[dir="rtl"] .flex-wrap {
+  justify-content: flex-end;
+}
+
+/* RTL Text alignment for all elements in selected products */
+[dir="rtl"] .selected-products-header * {
+  text-align: right;
+}
+
+/* RTL Container alignment */
+[dir="rtl"] .container-fluid {
+  direction: rtl;
+}
+
+[dir="rtl"] .container-fluid > * {
+  direction: ltr;
+}
+
+[dir="rtl"] .selected-products-header {
+  direction: rtl;
+}
+
+/* Strong RTL overrides with !important */
+[dir="rtl"] .selected-products-header .d-flex {
+  justify-content: flex-end !important;
+  flex-direction: row-reverse !important;
+  text-align: right !important;
+}
+
+[dir="rtl"] .selected-products-tags {
+  justify-content: flex-end !important;
+  text-align: right !important;
+}
+
+[dir="rtl"] .d-flex.flex-wrap.gap-2 {
+  justify-content: flex-end !important;
+}
+
+/* RTL Bootstrap Utility Overrides */
+[dir="rtl"] .me-3 {
+  margin-right: 0 !important;
+  margin-left: 1rem !important;
+}
+
+[dir="rtl"] .me-2 {
+  margin-right: 0 !important;
+  margin-left: 0.5rem !important;
+}
+
+[dir="rtl"] .ms-2 {
+  margin-left: 0 !important;
+  margin-right: 0.5rem !important;
+}
+
+[dir="rtl"] .text-start {
+  text-align: right !important;
+}
+
+[dir="rtl"] .text-end {
+  text-align: left !important;
+}
+
+/* RTL Specific Overrides for Selected Products Layout */
+[dir="rtl"] .selected-products-header .d-flex.align-items-center {
+  justify-content: flex-end;
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .selected-products-tags.d-flex {
+  justify-content: flex-end;
+}
+
+[dir="rtl"] .gap-2 > * {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+[dir="rtl"] .gap-2 > *:last-child {
+  margin-right: 0;
+}
+
 /* Clear all products button styling */
 #clearAllProducts {
   color: var(--loreal-dark) !important;
