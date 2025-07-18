@@ -6,6 +6,9 @@ const selectedProductsList = document.getElementById("selectedProductsList");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
 
+/* Cloudflare Worker configuration for secure API calls */
+const CLOUDFLARE_WORKER_URL = 'https://loreal-chatbot-proxy.lphneos245.workers.dev/';
+
 /* Store all products globally to avoid repeated API calls */
 let allProducts = [];
 let currentCategoryFilter = "";
@@ -476,7 +479,7 @@ chatForm.addEventListener("submit", async (e) => {
   }
 });
 
-/* Generate AI response using OpenAI API with web search capability */
+/* Generate AI response using Cloudflare Worker to protect API key */
 async function generateAIResponse(userMessage, selectedProducts) {
   /* Create context about selected products */
   const productContext = selectedProducts.length > 0 
@@ -539,27 +542,42 @@ Keep it clean and easy to read with emojis to enhance emotional connection.`;
     content: `${userMessage}\n\nContext: ${productContext}${webSearchResults}`
   });
 
-  /* Make API call to OpenAI */
-  const response = await fetch(OPENAI_CONFIG.apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_CONFIG.apiKey}`
-    },
-    body: JSON.stringify({
-      model: OPENAI_CONFIG.model,
-      messages: messages,
-      max_tokens: OPENAI_CONFIG.maxTokens,
-      temperature: OPENAI_CONFIG.temperature
-    })
-  });
+  /* Make API call to Cloudflare Worker instead of direct OpenAI */
+  try {
+    const response = await fetch(CLOUDFLARE_WORKER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messages: messages,
+        model: "gpt-4o",
+        max_tokens: 1000,
+        temperature: 0.7
+      })
+    });
 
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Cloudflare Worker error:', response.status, errorText);
+      throw new Error(`Cloudflare Worker request failed: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('Worker response:', data); // Debug log
+    
+    if (data.choices && data.choices[0] && data.choices[0].message) {
+      return data.choices[0].message.content;
+    } else if (data.error) {
+      throw new Error(`AI Service Error: ${data.error.message || data.error}`);
+    } else {
+      console.error('Invalid response format:', data);
+      throw new Error('Invalid response format from AI service');
+    }
+  } catch (error) {
+    console.error('Error calling Cloudflare Worker:', error);
+    throw new Error('Sorry, I encountered an error while generating your routine. Please try again.');
   }
-
-  const data = await response.json();
-  return data.choices[0].message.content;
 }
 
 /* Perform web search for current L'Oréal information */
@@ -568,11 +586,11 @@ async function performWebSearch(query) {
     /* Create search query focused on L'Oréal */
     const searchQuery = `L'Oréal ${query} beauty routine products 2024 2025`;
     
-    /* Use Serper API for web search (you'll need to add your API key to secrets.js) */
+    /* Use Serper API for web search - you'll need to add your API key to your Cloudflare Worker */
     const searchResponse = await fetch('https://google.serper.dev/search', {
       method: 'POST',
       headers: {
-        'X-API-KEY': SEARCH_CONFIG?.apiKey || '', // Add your Serper API key to secrets.js
+        'X-API-KEY': '', // This would need to be handled by your Cloudflare Worker
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -621,7 +639,7 @@ async function performWebSearch(query) {
     return results;
   } catch (error) {
     console.error("Web search error:", error);
-    return [];
+    return []; // Return empty array instead of throwing error
   }
 }
 
