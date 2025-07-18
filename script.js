@@ -21,8 +21,7 @@ let conversationHistory = []; // Store conversation history for context
 /* localStorage keys */
 const STORAGE_KEYS = {
   SELECTED_PRODUCTS: 'loreal_selected_products',
-  CONVERSATION_HISTORY: 'loreal_conversation_history',
-  RTL_MODE: 'loreal_rtl_mode'
+  CONVERSATION_HISTORY: 'loreal_conversation_history'
 };
 
 /* Load data from localStorage */
@@ -42,18 +41,11 @@ function loadFromStorage() {
       /* Restore chat messages to the UI */
       restoreChatHistory();
     }
-    
-    /* Load RTL mode preference */
-    const savedRtlMode = localStorage.getItem(STORAGE_KEYS.RTL_MODE);
-    if (savedRtlMode === 'true') {
-      setRTLMode(true);
-    }
   } catch (error) {
     console.error("Error loading from localStorage:", error);
     /* Reset if corrupted data */
     localStorage.removeItem(STORAGE_KEYS.SELECTED_PRODUCTS);
     localStorage.removeItem(STORAGE_KEYS.CONVERSATION_HISTORY);
-    localStorage.removeItem(STORAGE_KEYS.RTL_MODE);
   }
 }
 
@@ -423,6 +415,9 @@ document.addEventListener("click", (e) => {
 async function initializeApp() {
   /* Load data from localStorage first */
   loadFromStorage();
+  
+  /* Initialize automatic RTL detection */
+  initializeRTLDetection();
   
   const products = await loadProducts();
   currentFilteredProducts = products;
@@ -990,36 +985,59 @@ document.getElementById("generateRoutine").addEventListener("click", async () =>
   }
 });
 
-/* RTL Mode Functions */
-function setRTLMode(isRTL) {
+/* Automatic RTL Detection for Web Translation */
+function detectAndApplyRTL() {
   const html = document.documentElement;
-  const rtlToggleText = document.getElementById('rtlToggleText');
   
+  /* Check if the page direction is set to RTL by translation services */
+  const computedDirection = window.getComputedStyle(html).direction;
+  const htmlDir = html.getAttribute('dir');
+  const htmlLang = html.getAttribute('lang');
+  
+  /* Detect if we're in RTL mode through various methods */
+  const isRTL = computedDirection === 'rtl' || 
+                htmlDir === 'rtl' || 
+                htmlLang === 'ar' || 
+                htmlLang === 'he' || 
+                htmlLang === 'fa' || 
+                htmlLang === 'ur';
+  
+  /* Apply RTL styles if detected */
   if (isRTL) {
     html.setAttribute('dir', 'rtl');
-    html.setAttribute('lang', 'ar');
-    rtlToggleText.textContent = 'English';
-    /* Update placeholder text for RTL */
-    document.getElementById('searchInput').placeholder = 'البحث عن المنتجات...';
-    document.getElementById('userInput').placeholder = 'اكتب رسالتك هنا...';
+    if (!html.classList.contains('rtl-mode')) {
+      html.classList.add('rtl-mode');
+    }
   } else {
     html.setAttribute('dir', 'ltr');
-    html.setAttribute('lang', 'en');
-    rtlToggleText.textContent = 'عربي';
-    /* Restore English placeholder text */
-    document.getElementById('searchInput').placeholder = 'Search products...';
-    document.getElementById('userInput').placeholder = 'Type your message here...';
+    html.classList.remove('rtl-mode');
   }
+}
+
+/* Monitor for changes that might indicate translation */
+function initializeRTLDetection() {
+  /* Initial detection */
+  detectAndApplyRTL();
   
-  /* Save preference */
-  localStorage.setItem(STORAGE_KEYS.RTL_MODE, isRTL.toString());
+  /* Watch for DOM changes that might indicate translation */
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      /* Check if language or direction attributes changed */
+      if (mutation.type === 'attributes' && 
+          (mutation.attributeName === 'dir' || 
+           mutation.attributeName === 'lang' || 
+           mutation.attributeName === 'style')) {
+        detectAndApplyRTL();
+      }
+    });
+  });
+  
+  /* Observe changes to the html element */
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['dir', 'lang', 'style', 'class']
+  });
+  
+  /* Also check periodically for translation services that don't trigger mutations */
+  setInterval(detectAndApplyRTL, 1000);
 }
-
-function toggleRTLMode() {
-  const html = document.documentElement;
-  const isCurrentlyRTL = html.getAttribute('dir') === 'rtl';
-  setRTLMode(!isCurrentlyRTL);
-}
-
-/* RTL Toggle Button Event Listener */
-document.getElementById('rtlToggle').addEventListener('click', toggleRTLMode);
